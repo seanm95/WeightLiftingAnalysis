@@ -294,7 +294,7 @@ histogram(as.factor(bad_count), type=&quot;count&quot;, xlab=&quot;Number of NAs
 
 <p>By manual examination, I determined that these 7 descriptive variables would not make suitable predictors.   </p>
 
-<p>After the exlcusion of 107 variables, this leaves 53 of which 52 are potential predictors and one (&ldquo;classe&rdquo;) is the outcome variables.   </p>
+<p>After the exclusion of 107 variables, this leaves 53 of which 52 are potential predictors and one (&ldquo;classe&rdquo;) is the outcome variables.   </p>
 
 <pre><code class="r">train_candidates &lt;- train_orig[,c(&quot;roll_belt&quot;, &quot;pitch_belt&quot;, &quot;yaw_belt&quot;, &quot;total_accel_belt&quot;,    &quot;gyros_belt_x&quot;, &quot;gyros_belt_y&quot;, &quot;gyros_belt_z&quot;, &quot;accel_belt_x&quot;, &quot;accel_belt_y&quot;, &quot;accel_belt_z&quot;, &quot;magnet_belt_x&quot;, &quot;magnet_belt_y&quot;, &quot;magnet_belt_z&quot;, &quot;roll_arm&quot;, &quot;pitch_arm&quot;, &quot;yaw_arm&quot;, &quot;total_accel_arm&quot;, &quot;gyros_arm_x&quot;, &quot;gyros_arm_y&quot;, &quot;gyros_arm_z&quot;, &quot;accel_arm_x&quot;, &quot;accel_arm_y&quot;, &quot;accel_arm_z&quot;, &quot;magnet_arm_x&quot;, &quot;magnet_arm_y&quot;, &quot;magnet_arm_z&quot;, &quot;roll_dumbbell&quot;, &quot;pitch_dumbbell&quot;, &quot;yaw_dumbbell&quot;, &quot;total_accel_dumbbell&quot;, &quot;gyros_dumbbell_x&quot;, &quot;gyros_dumbbell_y&quot;, &quot;gyros_dumbbell_z&quot;, &quot;accel_dumbbell_x&quot;, &quot;accel_dumbbell_y&quot;, &quot;accel_dumbbell_z&quot;, &quot;magnet_dumbbell_x&quot;, &quot;magnet_dumbbell_y&quot;, &quot;magnet_dumbbell_z&quot;, &quot;roll_forearm&quot;, &quot;pitch_forearm&quot;, &quot;yaw_forearm&quot;, &quot;total_accel_forearm&quot;, &quot;gyros_forearm_x&quot;, &quot;gyros_forearm_y&quot;, &quot;gyros_forearm_z&quot;, &quot;accel_forearm_x&quot;, &quot;accel_forearm_y&quot;, &quot;accel_forearm_z&quot;, &quot;magnet_forearm_x&quot;, &quot;magnet_forearm_y&quot;, &quot;magnet_forearm_z&quot;, &quot;classe&quot;)]
 </code></pre>
@@ -403,11 +403,11 @@ The default number of trees used for Random Forest is 500.   </p>
 ## E    0    9   16   14 2847  0.01351351
 </code></pre>
 
-<p>The estimated out-of-bounds (OOB) error is 2.04%. We know that the out-of-sample error rate should be a little larger than this.    </p>
+<p>The estimated out-of-bounds (OOB) error is 2.04%. I know that the out-of-sample error rate should be a little larger than this.    </p>
 
 <h2>Testing</h2>
 
-<p>Next we evaluate the model using the testing set:   </p>
+<p>Next I evaluate the model using the testing set:   </p>
 
 <pre><code class="r">confusionMatrix(testing$classe, predict(modelFit, testing))
 </code></pre>
@@ -417,32 +417,32 @@ The default number of trees used for Random Forest is 500.   </p>
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 1107    3    5    1    0
-##          B   10  739    8    0    2
+##          B   10  740    7    0    2
 ##          C    1    8  670    3    2
 ##          D    0    4   28  610    1
 ##          E    0    3    6    5  707
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9771          
-##                  95% CI : (0.9719, 0.9815)
+##                Accuracy : 0.9773          
+##                  95% CI : (0.9722, 0.9817)
 ##     No Information Rate : 0.285           
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.971           
+##                   Kappa : 0.9713          
 ##  Mcnemar&#39;s Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9902   0.9762   0.9344   0.9855   0.9930
-## Specificity            0.9968   0.9937   0.9956   0.9900   0.9956
-## Pos Pred Value         0.9919   0.9736   0.9795   0.9487   0.9806
-## Neg Pred Value         0.9961   0.9943   0.9855   0.9973   0.9984
-## Prevalence             0.2850   0.1930   0.1828   0.1578   0.1815
-## Detection Rate         0.2822   0.1884   0.1708   0.1555   0.1802
+## Sensitivity            0.9902   0.9763   0.9358   0.9855   0.9930
+## Specificity            0.9968   0.9940   0.9956   0.9900   0.9956
+## Pos Pred Value         0.9919   0.9750   0.9795   0.9487   0.9806
+## Neg Pred Value         0.9961   0.9943   0.9858   0.9973   0.9984
+## Prevalence             0.2850   0.1932   0.1825   0.1578   0.1815
+## Detection Rate         0.2822   0.1886   0.1708   0.1555   0.1802
 ## Detection Prevalence   0.2845   0.1935   0.1744   0.1639   0.1838
-## Balanced Accuracy      0.9935   0.9850   0.9650   0.9877   0.9943
+## Balanced Accuracy      0.9935   0.9851   0.9657   0.9877   0.9943
 </code></pre>
 
 <p>As you can see here our accuracy is 97.71%. Thereforr our out-of-sample error rate is 2.29%    </p>

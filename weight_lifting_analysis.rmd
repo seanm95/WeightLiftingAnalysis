@@ -1,0 +1,161 @@
+
+# Weight Lifting Analysis   
+   
+   
+## Introduction
+   
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data 
+about personal activity relatively inexpensively. These type of devices are part of the quantified self 
+movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to 
+find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify 
+how much of a particular activity they do, but they rarely quantify how well they do it. In this project, my 
+goal is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They 
+were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available 
+from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise 
+Dataset).   
+   
+Note that I have chosen to show all the R code used for the analysis. Feel free to skip over code as you please.   
+
+## Data Examination 
+
+```{r}
+library(lattice)
+library(caret)
+```
+
+Code for loading files:    
+```{r, cache=TRUE}
+
+# Download files and load
+if (!file.exists("./dataWeight")){dir.create("./dataWeight")}
+
+if (!file.exists("./dataWeight/pml-training.csv") )
+    {
+fileUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+download.file(fileUrl, destfile="./dataWeight/pml-training.csv")
+}
+train_orig <- read.csv("./dataWeight/pml-training.csv")
+
+
+if (!file.exists("./dataWeight/pml-testing.csv") )
+    {
+fileUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(fileUrl, destfile="./dataWeight/pml-testing.csv")
+}
+test_orig <- read.csv("./dataWeight/pml-testing.csv")
+
+```
+
+Some data values:    
+```{r}
+table(train_orig$classe)
+dim(train_orig)
+```
+
+The data frame train_orig has 19,622 records, each with 160 variables.   
+   
+From examining the data, it is apparent that a lot of variables have 19,216 NA or 19216 empty values for factors.    
+Since the initial set has 19622 observations, these variables will be of little use for modeling.   
+
+```{r}
+bad_count<- array(dim=dim(train_orig)[2])
+# Count the number of NA or factor values of ""
+for (i in 1:dim(train_orig)[2] ) bad_count[i] <- sum(is.na(train_orig[,i]) | train_orig[,i]=="")
+
+histogram(as.factor(bad_count), type="count", xlab="Number of NAs or empty Factors in possible Predictors")
+
+table(as.factor(bad_count))
+
+```
+
+From the graph and the histogram, it can be seen that 100 of the predictors have 19,216 NAs or factor value of "". This means those predictors have 406 "good" values. This number of values will not be significant for the training so I will exclude them.   
+
+    
+
+I will also exclude 7 descriptive variables:   
+   user_name   
+   raw_timestamp_part_1   
+   raw_timestamp_part_2   
+   cvtd_timestamp   
+   new_window   
+   num_window   
+
+By manual examination, I determined that these 7 descriptive variables would not make suitable predictors.   
+
+
+
+After the exlcusion of 107 variables, this leaves 53 of which 52 are potential predictors and one ("classe") is the outcome variables.   
+
+```{r, cache=TRUE}
+train_candidates <- train_orig[,c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt",    "gyros_belt_x", "gyros_belt_y", "gyros_belt_z", "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z", "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z", "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z", "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z", "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y", "magnet_forearm_z", "classe")]
+```
+
+These variables are assigned to train_candidates.   
+
+## Training   
+   
+Next I split the initial set (train_candidates) into a training set with 80% of the records and a testing set with 20% of the records.   
+
+```{r, cache=TRUE}
+set.seed(33833)
+inTrain = createDataPartition(train_candidates$classe, p = 0.8)[[1]]
+training = train_candidates[ inTrain,]
+testing = train_candidates[-inTrain,]
+```
+
+The result variable has 5 discrete values, A, B, C, D and E.   
+
+I decided Random Forest would likely be the most suitable algorithm to use for training.   
+The default number of trees used for Random Forest is 500.   
+
+For Cross-Validation, I decided to use resampling with the Bootstrap 632 method. This yielded 25 repetitions of resampling.   
+
+Because I have a high number of Predictor variables (52), I am instructing the algorith to use Principle Components Analysis to see if a subset of the predictors have adequate coverage for prediction.   
+    
+The training statement is:   
+```{r, cache=TRUE}
+modelFit <- suppressWarnings( train(training$classe ~ ., method="rf", preProcess="pca", trControl=trainControl(method="boot632"),  data=training) )
+```
+
+I am using suppressWarnings to hide the following warning:   
+ ## Warning in randomForest.default(x, y, mtry = param$mtry, ...): invalid   
+ ## mtry: reset to within valid range   
+
+I do not think this warning affects the validity of the generated model.     
+    
+    
+The model constructed is:   
+```{r}
+modelFit
+```
+
+As you can see a model with an estimated accuracy of 97.9% was chosen.    
+   
+The PCA results are:   
+```{r}
+modelFit$preProcess
+```
+
+So the pre-process deterined that 25 of the 52 variables are sufficient to account for 95% of the variance.   
+
+The final model details with the traiming set is:   
+```{r}
+modelFit$finalModel
+```
+   
+The estimated out-of-bounds (OOB) error is 2.04%. We know that the out-of-sample error rate should be a little larger than this.    
+
+## Testing
+
+Next we evaluate the model using the testing set:   
+```{r}
+confusionMatrix(testing$classe, predict(modelFit, testing))
+```
+
+As you can see here our accuracy is 97.71%. Thereforr our out-of-sample error rate is 2.29%    
+    
+## Conclusion
+
+I believe this is a very good prediction model for this area.   
+
+The second part of this project involved making predictions for 20 other records. The model successfuly predicted 19 of the 20 which further validates the error rate.   
